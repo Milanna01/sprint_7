@@ -1,8 +1,9 @@
 from faker import Faker
-import random  # Добавляем импорт random
+import random
 
 fake_ru = Faker('ru_RU')
 fake_en = Faker()
+
 
 class TestData:
     # Статические данные для тестов
@@ -12,6 +13,12 @@ class TestData:
     valid_courier_credentials = {"login": "Milanna01", "password": "Mila.2002", "firstName": "Milanna"}
     courier_without_firstname = {"login": "Milanna01", "password": "1234"}
     courier_wrong_password = {"login": "Milanna01", "password": "invalid"}
+    
+    # Ожидаемые сообщения об ошибках
+    ERROR_LOGIN_ALREADY_EXISTS = "Этот логин уже используется. Попробуйте другой."
+    ERROR_NOT_ENOUGH_DATA_FOR_ACCOUNT = "Недостаточно данных для создания учетной записи"
+    ERROR_ACCOUNT_NOT_FOUND = "Учетная запись не найдена"
+    ERROR_NOT_ENOUGH_DATA_FOR_LOGIN = "Недостаточно данных для входа"
     
     # Методы для генерации случайных данных
     @staticmethod
@@ -32,6 +39,40 @@ class TestData:
             'login': TestData.generate_random_login(),
             'password': TestData.generate_random_password(),
             'firstName': TestData.generate_random_firstname()
+        }
+    
+    @staticmethod
+    def get_empty_login_credentials():
+        """Данные для теста с пустым логином"""
+        return {
+            'login': '',
+            'password': TestData.generate_random_password(),
+            'firstName': TestData.generate_random_firstname()
+        }
+    
+    @staticmethod
+    def get_empty_password_credentials():
+        """Данные для теста с пустым паролем"""
+        return {
+            'login': TestData.generate_random_login(),
+            'password': '',
+            'firstName': TestData.generate_random_firstname()
+        }
+    
+    @staticmethod
+    def get_invalid_login_data():
+        """Данные для теста с несуществующим логином"""
+        return {
+            'login': TestData.generate_random_login(),
+            'password': TestData.generate_random_password()
+        }
+    
+    @staticmethod
+    def get_invalid_password_data():
+        """Данные для теста с неверным паролем"""
+        return {
+            'login': TestData.correct_login,
+            'password': TestData.generate_random_password()
         }
 
 
@@ -85,11 +126,14 @@ class TestOrderData:
         "color": []
     }
     
+    # Ожидаемые ответы API
+    SUCCESS_RESPONSE = {"ok": True}
+    
     # Методы для генерации случайных заказов
     @staticmethod
     def generate_random_order_data(color=None):
         if color is None:
-            color = random.choice([["BLACK"], ["GREY"], ["BLACK", "GREY"], []])  # ИСПРАВЛЕНО
+            color = random.choice([["BLACK"], ["GREY"], ["BLACK", "GREY"], []])
             
         return {
             "firstName": fake_ru.first_name(),

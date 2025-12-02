@@ -30,8 +30,8 @@ class TestCourierLogin:
     @allure.description('В тест по очереди передаются наборы данных с несуществующим логином или неверным паролем. '
                         'Проверяются код и тело ответа.')
     @pytest.mark.parametrize('nonexistent_credentials', [
-        {'login': TestData.generate_random_login(), 'password': TestData.generate_random_password()},  # полностью случайные данные
-        {'login': TestData.correct_login, 'password': TestData.generate_random_password()}        # существующий логин + случайный пароль
+        TestData.get_invalid_login_data(),
+        TestData.get_invalid_password_data()
     ])
     def test_courier_login_nonexistent_data_not_found(self, nonexistent_credentials):
         with allure.step('Отправка POST запроса на авторизацию с невалидными данными'):
@@ -39,14 +39,17 @@ class TestCourierLogin:
         
         # Проверка ошибки "учетная запись не найдена" (код 404 и сообщение)
         assert response.status_code == 404
-        assert response.json() == {'code': 404, 'message': 'Учетная запись не найдена'}
+        assert response.json() == {
+            'code': 404, 
+            'message': TestData.ERROR_ACCOUNT_NOT_FOUND
+        }
 
     @allure.title('Проверка получения ошибки аутентификации с пустым полем логина или пароля')
     @allure.description('В тест по очереди передаются наборы данных с пустым логином или паролем. '
                         'Проверяются код и тело ответа.')
     @pytest.mark.parametrize('empty_credentials', [
-        {'login': '', 'password': TestData.generate_random_password()},  # пустой логин
-        {'login': TestData.correct_login, 'password': ''}           # пустой пароль
+        {'login': '', 'password': TestData.generate_random_password()},
+        {'login': TestData.correct_login, 'password': ''}
     ])
     def test_courier_login_empty_credentials_bad_request(self, empty_credentials):
         with allure.step('Отправка POST запроса на авторизацию с пустыми полями'):
@@ -54,7 +57,10 @@ class TestCourierLogin:
         
         # Проверка ошибки валидации (код 400 и сообщение)
         assert response.status_code == 400
-        assert response.json() == {'code': 400, 'message': 'Недостаточно данных для входа'}
+        assert response.json() == {
+            'code': 400, 
+            'message': TestData.ERROR_NOT_ENOUGH_DATA_FOR_LOGIN
+        }
 
     @allure.title('Проверка возврата id при успешной авторизации')
     def test_courier_login_returns_id(self, new_courier):
